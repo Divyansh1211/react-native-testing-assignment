@@ -61,7 +61,6 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
           noRepeatedChars: false,
           noCommonPatterns: false,
         },
-        // feedback: [],
       };
     }
 

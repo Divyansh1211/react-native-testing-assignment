@@ -66,12 +66,12 @@ describe("PasswordStrengthValidator - Full Suite", () => {
       "lowercase123!"
     );
 
-    expect(mockFn).toHaveBeenCalled(); // 💡 Make sure it actually got called
+    expect(mockFn).toHaveBeenCalled()
 
     const result: PasswordStrength = mockFn.mock.calls[1][0];
 
-    expect(result.criteria.uppercase).toBe(true); // ✅ Satisfied because we turned off the requirement
-    expect(result.score).toBeGreaterThanOrEqual(1); // ✅ Should have at least some score
+    expect(result.criteria.uppercase).toBe(true);
+    expect(result.score).toBeGreaterThanOrEqual(1); 
   });
 
   it("handles empty password", () => {
@@ -102,7 +102,7 @@ describe("PasswordStrengthValidator - Full Suite", () => {
     const result: PasswordStrength = mockFn.mock.calls[1][0];
 
     expect(result.criteria.specialChars).toBe(true);
-    expect(result.criteria.noRepeatedChars).toBe(false); // emojis are repeated
+    expect(result.criteria.noRepeatedChars).toBe(false);
   });
 
   it("renders UI at each strength level", () => {
