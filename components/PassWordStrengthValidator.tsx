@@ -1,40 +1,20 @@
 // PasswordStrengthValidator.js
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import {
+  CriteriaKeys,
+  PasswordStrength,
+  PasswordStrengthValidatorProps,
+} from "../types/Types";
+import Icon from "react-native-vector-icons/Feather";
 
 const commonPatterns = ["123456", "password", "qwerty", "letmein", "abc123"];
-
-type CriteriaKeys =
-  | "length"
-  | "uppercase"
-  | "lowercase"
-  | "numbers"
-  | "specialChars"
-  | "noRepeatedChars"
-  | "noCommonPatterns";
-
-type StrengthCriteria = {
-  [key in CriteriaKeys]: boolean;
-};
-
-export interface PasswordStrength {
-  level: "Weak" | "Medium" | "Strong";
-  score: number;
-  maxScore: number;
-  criteria: StrengthCriteria;
-  feedback: string[];
-}
-
-interface PasswordStrengthValidatorProps {
-  onStrengthChange?: (strength: PasswordStrength) => void;
-  minLength?: number;
-  requireUppercase?: boolean;
-  requireLowercase?: boolean;
-  requireNumbers?: boolean;
-  requireSpecialChars?: boolean;
-  preventRepeatedChars?: boolean;
-  preventCommonPatterns?: boolean;
-}
 
 const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
   onStrengthChange,
@@ -47,6 +27,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
   preventCommonPatterns = true,
 }) => {
   const [password, setPassword] = useState<string>("");
+  const [secure, setSecure] = useState(true);
   const [strength, setStrength] = useState<PasswordStrength>({
     level: "Weak",
     score: 0,
@@ -60,8 +41,9 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
       noRepeatedChars: false,
       noCommonPatterns: false,
     },
-    feedback: [],
   });
+
+  const toggleSecure = () => setSecure(!secure);
 
   // TODO: Implement evaluatePassword function to check all criteria
   const evaluatePassword = (pwd: string): PasswordStrength => {
@@ -79,7 +61,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
           noRepeatedChars: false,
           noCommonPatterns: false,
         },
-        feedback: [],
+        // feedback: [],
       };
     }
 
@@ -95,16 +77,6 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
         !commonPatterns.some((pattern) => pwd.toLowerCase().includes(pattern)),
     };
 
-    const feedback = [];
-    if (!criteria.length)
-      feedback.push(`Should be at least ${minLength} characters`);
-    if (!criteria.uppercase) feedback.push("Include uppercase letters");
-    if (!criteria.lowercase) feedback.push("Include lowercase letters");
-    if (!criteria.numbers) feedback.push("Include numbers");
-    if (!criteria.specialChars) feedback.push("Include special characters");
-    if (!criteria.noRepeatedChars) feedback.push("Avoid repeated characters");
-    if (!criteria.noCommonPatterns) feedback.push("Avoid common patterns");
-
     const passedCount = Object.values(criteria).filter(Boolean).length;
     let level: PasswordStrength["level"] = "Weak";
     if (passedCount >= 6) level = "Strong";
@@ -115,7 +87,6 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
       score: passedCount,
       maxScore: 7,
       criteria,
-      feedback,
     };
   };
 
@@ -135,11 +106,11 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
   const getStrengthColor = (level: "Weak" | "Medium" | "Strong") => {
     switch (level) {
       case "Weak":
-        return "#e74c3c"; // red
+        return "#e74c3c";
       case "Medium":
-        return "#f39c12"; // orange
+        return "#f39c12";
       case "Strong":
-        return "#2ecc71"; // green
+        return "#2ecc71";
       default:
         return "#aaa";
     }
@@ -157,14 +128,19 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
     <View style={styles.container}>
       {/* Component UI */}
       <Text style={styles.header}>Password</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter password"
-        placeholderTextColor="#aaa"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+      <View>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter password"
+          placeholderTextColor="#aaa"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={secure}
+        />
+        <TouchableOpacity onPress={toggleSecure} style={styles.iconContainer}>
+          <Icon name={secure ? "eye-off" : "eye"} size={20} color="#888" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.strengthBarContainer}>
         <View style={styles.strengthBarBackground}>
           <View
@@ -187,7 +163,10 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
           Strength: {strength.level}
         </Text>
       </View>
-      <Text style={styles.feedbackText}>. Please enter a password</Text>
+      <View style={styles.bulletContainer}>
+        <Text style={styles.bullet}>{"\u2022"}</Text>
+        <Text style={styles.text}> Please enter a password</Text>
+      </View>
       <View style={styles.criteriaList}>
         {Object.entries(strength.criteria).map(([key, met]) => (
           <Text
@@ -198,17 +177,6 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
           </Text>
         ))}
       </View>
-
-      {strength.feedback.length > 0 && (
-        <View style={styles.feedbackBox}>
-          <Text style={styles.feedbackHeader}>Suggestions:</Text>
-          {strength.feedback.map((tip, idx) => (
-            <Text key={idx} style={styles.feedbackText}>
-              - {tip}
-            </Text>
-          ))}
-        </View>
-      )}
     </View>
   );
 };
@@ -220,6 +188,16 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     margin: 16,
+  },
+  bulletContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 4,
+  },
+  bullet: {
+    color: "#B7B7B7",
+    fontSize: 14,
+    marginTop: 2,
   },
   header: {
     color: "black",
@@ -235,6 +213,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "grey",
+  },
+  iconContainer: {
+    position: "absolute",
+    right: 10,
+    top: 10,
   },
   strengthText: {
     fontSize: 16,
@@ -257,18 +240,7 @@ const styles = StyleSheet.create({
   unmet: {
     color: "red",
   },
-  feedbackBox: {
-    marginTop: 10,
-    backgroundColor: "#2a2a2a",
-    padding: 10,
-    borderRadius: 8,
-  },
-  feedbackHeader: {
-    color: "#fff",
-    marginBottom: 4,
-    fontWeight: "600",
-  },
-  feedbackText: {
+  text: {
     color: "#B7B7B7",
     fontSize: 13,
   },

@@ -1,8 +1,7 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
-import PasswordStrengthValidator, {
-  PasswordStrength,
-} from "../PassWordStrengthValidator";
+import PasswordStrengthValidator from "../PassWordStrengthValidator";
+import { PasswordStrength } from "../../types/Types";
 
 const renderWithProps = (props = {}) => {
   const mockFn = jest.fn();
@@ -34,7 +33,7 @@ describe("PasswordStrengthValidator - Full Suite", () => {
     fireEvent.changeText(getByPlaceholderText("Enter password"), "Test123!");
 
     expect(mockFn).toHaveBeenCalled();
-    const result: PasswordStrength = mockFn.mock.calls[0][0];
+    const result: PasswordStrength = mockFn.mock.calls[1][0];
     expect(result).toHaveProperty("level");
     expect(result).toHaveProperty("score");
   });
@@ -70,7 +69,6 @@ describe("PasswordStrengthValidator - Full Suite", () => {
     expect(mockFn).toHaveBeenCalled(); // 💡 Make sure it actually got called
 
     const result: PasswordStrength = mockFn.mock.calls[1][0];
-    // console.log(mockFn.mock.calls[1][0]);
 
     expect(result.criteria.uppercase).toBe(true); // ✅ Satisfied because we turned off the requirement
     expect(result.score).toBeGreaterThanOrEqual(1); // ✅ Should have at least some score
@@ -91,7 +89,7 @@ describe("PasswordStrengthValidator - Full Suite", () => {
 
     fireEvent.changeText(getByPlaceholderText("Enter password"), longPassword);
     const result: PasswordStrength = mockFn.mock.calls[1][0];
-    
+
     expect(result.level).toBe("Strong");
     expect(result.score).toBe(result.maxScore);
   });
