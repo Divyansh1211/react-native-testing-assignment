@@ -65,28 +65,31 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
 
   // TODO: Implement evaluatePassword function to check all criteria
   const evaluatePassword = (pwd: string): PasswordStrength => {
-    if(pwd.length < 3) return {
-      level: "Weak",
-      score: 0,
-      maxScore: 7,
-      criteria: {
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        numbers: false,
-        specialChars: false,
-        noRepeatedChars: false,
-        noCommonPatterns: false,
-      },
-      feedback: [],
+    if (pwd.length < 3) {
+      return {
+        level: "Weak",
+        score: 0,
+        maxScore: 7,
+        criteria: {
+          length: false,
+          uppercase: false,
+          lowercase: false,
+          numbers: false,
+          specialChars: false,
+          noRepeatedChars: false,
+          noCommonPatterns: false,
+        },
+        feedback: [],
+      };
     }
+
     const criteria = {
       length: pwd.length >= minLength,
       uppercase: !requireUppercase || /[A-Z]/.test(pwd),
       lowercase: !requireLowercase || /[a-z]/.test(pwd),
       numbers: !requireNumbers || /\d/.test(pwd),
       specialChars: !requireSpecialChars || /[^A-Za-z0-9]/.test(pwd),
-      noRepeatedChars: !preventRepeatedChars || !/(.)\1{2,}/.test(pwd),
+      noRepeatedChars: !preventRepeatedChars || !/(.)\1{2,}/gu.test(pwd),
       noCommonPatterns:
         !preventCommonPatterns ||
         !commonPatterns.some((pattern) => pwd.toLowerCase().includes(pattern)),
@@ -165,6 +168,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
       <View style={styles.strengthBarContainer}>
         <View style={styles.strengthBarBackground}>
           <View
+            testID="strength-bar-fill"
             style={[
               styles.strengthBarFill,
               {
