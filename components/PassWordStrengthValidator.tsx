@@ -88,7 +88,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
     if (!criteria.noCommonPatterns) feedback.push("Avoid common patterns");
 
     const passedCount = Object.values(criteria).filter(Boolean).length;
-     let level: PasswordStrength["level"] = "Weak";
+    let level: PasswordStrength["level"] = "Weak";
     if (passedCount >= 6) level = "Strong";
     else if (passedCount >= 4) level = "Medium";
 
@@ -135,7 +135,12 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
         secureTextEntry
       />
 
-      <Text style={[styles.strengthText, styles[strength.level.toLowerCase()]]}>
+      <Text
+        style={[
+          styles.strengthText,
+          styles[strength.level.toLowerCase() as keyof typeof styles],
+        ]}
+      >
         Strength: {strength.level}
       </Text>
 
@@ -145,7 +150,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
             key={key}
             style={[styles.criteriaText, met ? styles.met : styles.unmet]}
           >
-            {met ? "✓" : "✗"} {getReadableCriteria(key)}
+            {met ? "✓" : "✗"} {getReadableCriteria(key as CriteriaKeys)}
           </Text>
         ))}
       </View>
