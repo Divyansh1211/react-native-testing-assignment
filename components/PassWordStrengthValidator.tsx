@@ -65,13 +65,28 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
 
   // TODO: Implement evaluatePassword function to check all criteria
   const evaluatePassword = (pwd: string): PasswordStrength => {
+    if(pwd.length < 3) return {
+      level: "Weak",
+      score: 0,
+      maxScore: 7,
+      criteria: {
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        numbers: false,
+        specialChars: false,
+        noRepeatedChars: false,
+        noCommonPatterns: false,
+      },
+      feedback: [],
+    }
     const criteria = {
       length: pwd.length >= minLength,
       uppercase: !requireUppercase || /[A-Z]/.test(pwd),
       lowercase: !requireLowercase || /[a-z]/.test(pwd),
       numbers: !requireNumbers || /\d/.test(pwd),
       specialChars: !requireSpecialChars || /[^A-Za-z0-9]/.test(pwd),
-      noRepeatedChars: !preventRepeatedChars || !/(.)\1{2,}/.test(pwd), // no 3+ repeated chars
+      noRepeatedChars: !preventRepeatedChars || !/(.)\1{2,}/.test(pwd),
       noCommonPatterns:
         !preventCommonPatterns ||
         !commonPatterns.some((pattern) => pwd.toLowerCase().includes(pattern)),
@@ -103,7 +118,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
 
   const getReadableCriteria = (key: CriteriaKeys) => {
     const map: Record<CriteriaKeys, string> = {
-      length: "Minimum length",
+      length: `Minimum length (${minLength})`,
       uppercase: "Contains uppercase",
       lowercase: "Contains lowercase",
       numbers: "Contains numbers",
@@ -112,6 +127,19 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
       noCommonPatterns: "No common patterns",
     };
     return map[key] || key;
+  };
+
+  const getStrengthColor = (level: "Weak" | "Medium" | "Strong") => {
+    switch (level) {
+      case "Weak":
+        return "#e74c3c"; // red
+      case "Medium":
+        return "#f39c12"; // orange
+      case "Strong":
+        return "#2ecc71"; // green
+      default:
+        return "#aaa";
+    }
   };
 
   // TODO: Implement useEffect hook to update strength whenever password changes
@@ -125,7 +153,7 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
   return (
     <View style={styles.container}>
       {/* Component UI */}
-      <Text style={styles.header}>Password Strength Validator</Text>
+      <Text style={styles.header}>Password</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter password"
@@ -134,16 +162,28 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
         onChangeText={setPassword}
         secureTextEntry
       />
-
-      <Text
-        style={[
-          styles.strengthText,
-          styles[strength.level.toLowerCase() as keyof typeof styles],
-        ]}
-      >
-        Strength: {strength.level}
-      </Text>
-
+      <View style={styles.strengthBarContainer}>
+        <View style={styles.strengthBarBackground}>
+          <View
+            style={[
+              styles.strengthBarFill,
+              {
+                width: `${(strength.score / strength.maxScore) * 100}%`,
+                backgroundColor: getStrengthColor(strength.level),
+              },
+            ]}
+          />
+        </View>
+        <Text
+          style={[
+            styles.strengthLabel,
+            { color: getStrengthColor(strength.level) },
+          ]}
+        >
+          Strength: {strength.level}
+        </Text>
+      </View>
+      <Text style={styles.feedbackText}>. Please enter a password</Text>
       <View style={styles.criteriaList}>
         {Object.entries(strength.criteria).map(([key, met]) => (
           <Text
@@ -172,23 +212,25 @@ const PasswordStrengthValidator: React.FC<PasswordStrengthValidatorProps> = ({
 const styles = StyleSheet.create({
   // Component styles
   container: {
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
     margin: 16,
   },
   header: {
-    color: "white",
+    color: "black",
     fontSize: 18,
     marginBottom: 10,
     fontWeight: "bold",
   },
   input: {
-    backgroundColor: "#2c2c2c",
-    color: "white",
+    backgroundColor: "white",
+    color: "black",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 4,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "grey",
   },
   strengthText: {
     fontSize: 16,
@@ -199,17 +241,17 @@ const styles = StyleSheet.create({
   medium: { color: "orange" },
   strong: { color: "green" },
   criteriaList: {
-    marginBottom: 10,
+    marginVertical: 10,
   },
   criteriaText: {
     fontSize: 14,
     marginBottom: 2,
   },
   met: {
-    color: "lightgreen",
+    color: "green",
   },
   unmet: {
-    color: "lightcoral",
+    color: "red",
   },
   feedbackBox: {
     marginTop: 10,
@@ -223,8 +265,25 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   feedbackText: {
-    color: "#ccc",
+    color: "#B7B7B7",
     fontSize: 13,
+  },
+  strengthBarContainer: {
+    marginVertical: 10,
+  },
+  strengthBarBackground: {
+    height: 8,
+    backgroundColor: "#ddd",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  strengthBarFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  strengthLabel: {
+    marginTop: 4,
+    fontWeight: "bold",
   },
 });
 
